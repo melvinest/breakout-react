@@ -56,7 +56,7 @@ class App extends React.Component {
     };
     const keyMap = keyMaps[e.key];
     const boardVelocity = {
-      magnitude: 300,
+      magnitude: 100,
       direction: keyMap,
     }
 
@@ -145,6 +145,10 @@ class App extends React.Component {
     if(ballDatum[0] < 24) {
       if(gameScreen[ballDatum[0] + 1][ballDatum[1]] === 2) {
         ballVelocity = this.calculateBallVelocity(this.state.boardVelocity, 'board');
+      }
+      if(gameScreen[ballDatum[0] + ballDirection[0]][ballDatum[1] + ballDirection[1]] === 2) {
+        ballDirection = [-1 * (ballDirection[0]), -1 * (ballDirection[1])];
+        ballVelocity = this.calculateBallVelocity({direction: ballDirection, magnitude: ballMagnitude}, 'board');
       }
       if(gameScreen[ballDatum[0] + ballDirection[0]][ballDatum[1] + ballDirection[1]] === 1 && 
         gameScreen[ballDatum[0] + ballDirection[0]][ballDatum[1]] === 0 && 
