@@ -43,7 +43,11 @@ class App extends React.Component {
   addBlocksToGameScreen(gameScreen, datum, size, value) {
     for (let i = datum[0]; i <= datum[0] + size[0]; i += 1) {
       for (let j = datum[1]; j < datum[1] + size [1]; j += 1) {
-        gameScreen[i][j] = value;
+        let newValue = value;
+        if(value === 1) {
+          newValue = Math.round(Math.random());
+        }
+        gameScreen[i][j] = newValue;
       }
     }
     return gameScreen;
@@ -56,7 +60,7 @@ class App extends React.Component {
     };
     const keyMap = keyMaps[e.key];
     const boardVelocity = {
-      magnitude: 100,
+      magnitude: 200,
       direction: keyMap,
     }
 
@@ -146,7 +150,7 @@ class App extends React.Component {
       if(gameScreen[ballDatum[0] + 1][ballDatum[1]] === 2) {
         ballVelocity = this.calculateBallVelocity(this.state.boardVelocity, 'board');
       }
-      if(gameScreen[ballDatum[0] + ballDirection[0]][ballDatum[1] + ballDirection[1]] === 2) {
+      if(gameScreen[ballDatum[0] + ballDirection[0]][ballDatum[1] + ballDirection[1]] === 2 && gameScreen[ballDatum[0] + 1][ballDatum[1]] === 0) {
         ballDirection = [-1 * (ballDirection[0]), -1 * (ballDirection[1])];
         ballVelocity = this.calculateBallVelocity({direction: ballDirection, magnitude: ballMagnitude}, 'board');
       }
