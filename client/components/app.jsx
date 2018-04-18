@@ -29,10 +29,10 @@ class App extends React.Component {
     super(props);
     this.ballSize = 10;
     this.screenSize = 600;
-    this.plankSize = 15;
-    console.log(this.screenSize - this.ballSize - this.plankSize)
+    this.plankDimensions = { length: 80, width: 15 };
+    this.initPlankPosition = [this.screenSize / 2 - this.plankDimensions.length / 2, this.screenSize - this.plankDimensions.width],
     this.state = {
-      ballPosition: [this.screenSize / 2, this.screenSize - this.ballSize - this.plankSize],
+      ballPosition: [this.screenSize / 2, this.screenSize - this.ballSize - this.plankDimensions.width],
       ballDirection: 60,
       ballSpeed: 5,
     };
@@ -78,9 +78,9 @@ class App extends React.Component {
   }
 
   moveBall() {
-    setInterval(() => {
-      this.changeBallPosition();
-    }, 1);
+    // setInterval(() => {
+    //   this.changeBallPosition();
+    // }, 1);
   }
 
   render() {
@@ -88,11 +88,28 @@ class App extends React.Component {
       top: `${this.state.ballPosition[1]}px`,
       left: `${this.state.ballPosition[0]}px`,
     };
+
+    const bricksProps = {
+      ballPosition: this.state.ballPosition,
+      ballSpeed: this.state.ballSpeed,
+      ballSize: this.ballSize,
+      ballDirection: this.state.ballDirection,
+      handleBrickCollision: (arr) => { this.handleBrickCollision(arr); },
+    };
+
+    const plankProps = {
+      ballPosition: this.state.ballPosition,
+      ballSpeed: this.state.ballSpeed,
+      ballSize: this.ballSize,
+      ballDirection: this.state.ballDirection,
+      position: this.initPlankPosition,
+      handleBrickCollision: (arr) => { this.handleBrickCollision(arr); },
+    };
     return (
-      <div className={styles.screen}>
-        <Bricks ballPosition={this.state.ballPosition} ballSpeed={this.state.ballSpeed} ballSize={this.ballSize} ballDirection={this.state.ballDirection} handleBrickCollision={(arr) => { this.handleBrickCollision(arr); }}/>
+      <div className={styles.screen} >
+        <Bricks {...bricksProps} />
         <div className={styles.ball} style={ballPosition} />
-        <Plank />
+        <Plank {...plankProps} />
       </div>
     );
   }
