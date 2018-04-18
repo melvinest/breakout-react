@@ -2,6 +2,7 @@
   height: 600px;
   width: 600px;
   border: 1px solid black;
+  position: absolute; 
 }
 
 .ball {
@@ -19,6 +20,7 @@
   float: left;
   box-sizing: border-box;
   border: 1px solid black;
+  font-size: 10px;
 }
 
 .hiddenBrick {

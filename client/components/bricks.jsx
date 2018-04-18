@@ -13,7 +13,7 @@ class Bricks extends React.Component {
     // console.log(this.state.bricks)
     const bricks = [];
     for (let i = 0; i < this.rowNumber * this.columnNumber; i += 1) {
-      bricks.push(<Brick key={i} />);
+      bricks.push(<Brick key={i} {...this.props} ballSize={this.props.ballSize} i={i}/>);
     }
     // console.log(bricks)
     return (<div>{bricks}</div>);

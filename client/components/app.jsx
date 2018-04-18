@@ -7,10 +7,10 @@ class App extends React.Component {
     super(props);
     this.ballSize = 10;
     this.screenSize = 600;
-    this.ballSpeed = 1000;
     this.state = {
-      ballPosition: [this.screenSize / 2, this.screenSize / 2],
+      ballPosition: [this.screenSize / 2, this.screenSize - this.ballSize],
       ballDirection: 60,
+      ballSpeed: 10,
     };
     this.moveBall();
   }
@@ -19,7 +19,7 @@ class App extends React.Component {
     let newBallDirection
     if(hor === 0) {
       newBallDirection = 0;
-    } else {
+    } else { 
       newBallDirection = 180 * Math.atan(Math.abs(ver / hor)) / Math.PI; 
     }
     if (hor > 0 && ver < 0) {
@@ -39,8 +39,8 @@ class App extends React.Component {
   changeBallPosition() {
     const { ballPosition } = this.state;
     const ballDirection = this.checkBallCollision();
-    const horPosition = ballPosition[0] + Math.cos(Math.PI * ballDirection / 180);
-    const verPosition = ballPosition[1] + Math.sin(Math.PI * ballDirection / 180);
+    const horPosition = ballPosition[0] + this.state.ballSpeed * Math.cos(Math.PI * ballDirection / 180);
+    const verPosition = ballPosition[1] + this.state.ballSpeed * Math.sin(Math.PI * ballDirection / 180);
     const newBallPosition = [horPosition, verPosition];
     this.setState({
       ballPosition: newBallPosition,
@@ -49,23 +49,35 @@ class App extends React.Component {
   }
 
   checkBallCollision() {
-    const { ballPosition, ballDirection } = this.state;
-    const ballDirectionComponents = [Math.cos(Math.PI * ballDirection / 180), Math.sin(Math.PI * ballDirection / 180)];
+    const { ballPosition } = this.state;  
+    const changeDirections = [false, false];
     if (ballPosition[0] <= 0 || ballPosition[0] >= this.screenSize - this.ballSize) {
-      ballDirectionComponents[0] *= -1;
+      changeDirections[0] = true;
     }
     if (ballPosition[1] <= 0 || ballPosition[1] >= this.screenSize - this.ballSize) {
-      ballDirectionComponents[1] *= -1;
+      changeDirections[1] = true;
     }
+    return this.changeBallDirection(changeDirections);
+  }
+
+  changeBallDirection([changeHor, changeVer]) {
+    const { ballDirection } = this.state;
+    const ballDirectionComponents = [Math.cos(Math.PI * ballDirection / 180), Math.sin(Math.PI * ballDirection / 180)];
+    if (changeHor) ballDirectionComponents[0] *= -1;
+    if (changeVer) ballDirectionComponents[1] *= -1;
     const newBallDirection = this.getAngle(ballDirectionComponents);
     return newBallDirection;
   }
 
+  handleBrickCollision(changeDirections) {
+    const ballDirection = this.changeBallDirection(changeDirections);
+    this.setState({ ballDirection });
+  }
+
   moveBall() {
-    const timeInterval = 1000 / this.ballSpeed;
     setInterval(() => {
       this.changeBallPosition();
-    }, timeInterval);
+    }, 1);
   }
 
   render() {
@@ -75,8 +87,8 @@ class App extends React.Component {
     };
     return (
       <div className={styles.screen}>
-        <Bricks />
-        <div className={styles.ball} style={ballPosition}></div>
+        <Bricks ballPosition={this.state.ballPosition} ballSpeed={this.state.ballSpeed} ballSize={this.ballSize} ballDirection={this.state.ballDirection} handleBrickCollision={(arr) => { this.handleBrickCollision(arr); }}/>
+        <div className={styles.ball} style={ballPosition} />
       </div>
     );
   }
