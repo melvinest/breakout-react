@@ -1,188 +1,169 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import Blocks from './blocks';
-import GameScreen from './game_screen'
+import Bricks from './bricks';
+import Plank from './plank';
+import ScoreBoard from './score_board';
+import styles from './styles/screen_style.css';
 
 class App extends React.Component {
+  static getAngle([hor, ver]) {
+    let newBallDirection;
+    if (hor === 0) {
+      newBallDirection = 0;
+    } else {
+      newBallDirection = (180 * Math.atan(Math.abs(ver / hor))) / Math.PI;
+    }
+    if (hor > 0 && ver < 0) {
+      newBallDirection = 360 - newBallDirection;
+    }
+    if (hor < 0) {
+      if (ver > 0) {
+        newBallDirection = 180 - newBallDirection;
+      }
+      if (ver < 0) {
+        newBallDirection = 180 + newBallDirection;
+      }
+    }
+    return newBallDirection;
+  }
+
   constructor(props) {
     super(props);
-    this.setIntervalInstance = null;
+    this.ballSize = 10;
+    this.screenSize = 600;
+    this.plankDimensions = { length: 80, width: 15 };
+    this.initPlankPosition = [this.screenSize / 2 - this.plankDimensions.length / 2, this.screenSize - this.plankDimensions.width];
+    this.initBallPosition = [this.screenSize / 2 - this.ballSize / 2, this.screenSize - this.ballSize - this.plankDimensions.width]
     this.state = {
-      blockSize: [8, 40],
-      blocksDatum: [0, 0],
-      gameScreen: [],
-      boardSize: [0, 5],
-      boardDatum: [24, 17],
-      ballSize: [0, 1],
-      ballDatum: [23, 19],
-      ballVelocity: {
-        magnitude: 0,
-        direction: [0, 0],
-      },
-      boardVelocity: {
-        magnitude: 0,
-        direction: [0, 0],
-      },
+      ballPosition: JSON.parse(JSON.stringify(this.initBallPosition)),
+      ballDirection: null,
+      ballSpeed: 3,
+      score: 0,
+      reset: false,
+      start: false,
     };
   }
 
-  componentWillMount() {
+  changeBallPosition() {
+    const ballDirection = this.checkBallCollision();
+    const { ballPosition } = this.state;
+    const horPosition = ballPosition[0] + (this.state.ballSpeed * Math.cos((Math.PI * ballDirection) / 180));
+    const verPosition = ballPosition[1] + (this.state.ballSpeed * Math.sin((Math.PI * ballDirection) / 180));
+    const newBallPosition = [horPosition, verPosition];
     this.setState({
-      gameScreen: this.createGameScreen(25, 40),
-    }, () => this.baseState = this.state);
+      ballPosition: newBallPosition,
+      ballDirection,
+    });
   }
 
-  createGameScreen(rows, columns) {
-    let gameScreen = Array(rows).fill().map(() => Array(columns).fill(0));;
-    gameScreen = this.addBlocksToGameScreen(gameScreen, this.state.blocksDatum, this.state.blockSize, 1);
-    gameScreen = this.addBlocksToGameScreen(gameScreen, this.state.boardDatum, this.state.boardSize, 2);
-    gameScreen = this.addBlocksToGameScreen(gameScreen, this.state.ballDatum, this.state.ballSize, 3);
-    return gameScreen;
+  checkBallCollision() {
+    const { ballPosition } = this.state;
+    const changeDirections = [false, false];
+    if (ballPosition[0] <= 0 || ballPosition[0] + this.ballSize >= this.screenSize - this.ballSize) {
+      changeDirections[0] = true;
+    }
+    if (ballPosition[1] <= 0) {
+      changeDirections[1] = true;
+    }
+    if (ballPosition[1] >= this.screenSize - this.ballSize) {
+      alert(`Game Over Your Score is ${this.state.score}`);
+      this.restart();
+      return null;
+    }
+    return this.changeBallDirection(changeDirections);
   }
 
-  addBlocksToGameScreen(gameScreen, datum, size, value) {
-    for (let i = datum[0]; i <= datum[0] + size[0]; i += 1) {
-      for (let j = datum[1]; j < datum[1] + size [1]; j += 1) {
-        let newValue = value;
-        if(value === 1) {
-          newValue = Math.round(Math.random());
-        }
-        gameScreen[i][j] = newValue;
-      }
-    }
-    return gameScreen;
+  changeBallDirection([changeHor, changeVer]) {
+    const { ballDirection } = this.state;
+    const ballDirectionComponents = [Math.cos((Math.PI * ballDirection) / 180), Math.sin((Math.PI * ballDirection) / 180)];
+    if (changeHor) ballDirectionComponents[0] *= -1;
+    if (changeVer) ballDirectionComponents[1] *= -1;
+    const newBallDirection = App.getAngle(ballDirectionComponents);
+    return newBallDirection;
   }
 
-  animateBoard(e) {
-    const keyMaps = {
-      ArrowLeft: [0, -1],
-      ArrowRight: [0, 1],
-    };
-    const keyMap = keyMaps[e.key];
-    const boardVelocity = {
-      magnitude: 200,
-      direction: keyMap,
-    }
-
-    if(keyMap) {
-      let ballVelocity = this.state.ballVelocity
-      if(this.state.ballVelocity.magnitude === 0) {
-        ballVelocity = this.calculateBallVelocity(boardVelocity, 'board');
-      } 
-      let boardDatum = this.state.boardDatum;
-      let gameScreen = this.addBlocksToGameScreen(this.state.gameScreen, boardDatum, this.state.boardSize, 0);
-      boardDatum = [boardDatum[0] + keyMap[0], Math.min(Math.max(boardDatum[1] + keyMap[1], 0), 35)];
-      gameScreen = this.addBlocksToGameScreen(gameScreen, boardDatum, this.state.boardSize, 2);
-      this.setState({ gameScreen, boardDatum, ballVelocity, boardVelocity}, this.animateBall);
-    }
-  }
-
-  handleKeyUp(e) {
-    if(e.key === 'ArrowRight' || e.key === 'ArrowRight') {
-      const boardVelocity = {
-        magnitude: 0,
-        direction: [0, 0],
-      }
-      this.setState({ boardVelocity });
-    }
-    
-  }
-
-  animateBall() {
-    if(this.setIntervalInstance === null) {
-      const setIntervalInstance = setInterval(() => this.moveBall(), this.state.ballVelocity.magnitude)
-      this.setIntervalInstance = setIntervalInstance;
-    }
+  handleBrickCollision(changeDirections) {
+    const ballDirection = this.changeBallDirection(changeDirections);
+    this.setState({ ballDirection });
   }
 
   moveBall() {
-    let gameScreen = this.state.gameScreen;
-    let ballDatum = this.state.ballDatum;
-    let ballVelocity = this.state.ballVelocity;
-    const deltaRow = ballVelocity.direction[0];
-    const deltaColumn = ballVelocity.direction[1];
-    gameScreen[ballDatum[0]][ballDatum[1]] = 0;
-    ballDatum = [ballDatum[0] + deltaRow, ballDatum[1] + deltaColumn];
-    if(ballDatum[0] === 25) {
-      this.resetGame();
-      return;
-    }
-    gameScreen[ballDatum[0]][ballDatum[1]] = 3;
-    this.checkCollision(gameScreen, ballDatum);
+    this.currentInterval = setInterval(() => {
+      if (this.state.ballSpeed > 0) {
+        this.changeBallPosition();
+      }
+    }, 1);
   }
 
-  calculateBallVelocity(obstacleVelocity, type) {
-    let newDirection;
-    if(type === 'board') {
-      let newHorizontalDirection = obstacleVelocity.direction[1];
-      if(obstacleVelocity.direction[1] === 0) {
-        newHorizontalDirection  = this.state.ballVelocity.direction[1]
-      }
-      newDirection = [-1, newHorizontalDirection];
-    } else {
-      newDirection = obstacleVelocity.direction;
-    }
-    let ballVelocity = {
-      magnitude: obstacleVelocity.magnitude,
-      direction: newDirection,
-    }
-    return ballVelocity;
-
+  increaseScore() {
+    const score = this.state.score + 1;
+    this.setState({ score });
   }
 
-  resetGame() {
-    alert('game over');
-    this.setState(this.baseState, () => this.setState({ gameScreen: this.createGameScreen(25, 40) }));
-    clearInterval(this.setIntervalInstance);
-    this.setIntervalInstance = null;
+  startGame(key) {
+    console.log(key);
+    console.log(this.state)
+    const moves = {
+      ArrowUp: 270,
+      ArrowLeft: 225,
+      ArrowRight: 315,
+    };
+    this.setState({
+      ballDirection: moves[key],
+      start: true,
+    }, () => { this.moveBall(); });
   }
 
-  checkCollision(gameScreen, ballDatum) {
-    console.log(this.state.gameScreen)
-    let ballDirection = this.state.ballVelocity.direction;
-    const ballMagnitude = this.state.ballVelocity.magnitude;
-    let ballVelocity = this.state.ballVelocity;
-    if(ballDatum[0] === 0) {
-      ballDirection[0] = -1 * (ballDirection[0]);
-      ballVelocity = this.calculateBallVelocity({direction: ballDirection, magnitude: ballMagnitude}); 
-    }
-    if(ballDatum[0] < 24) {
-      if(gameScreen[ballDatum[0] + 1][ballDatum[1]] === 2) {
-        ballVelocity = this.calculateBallVelocity(this.state.boardVelocity, 'board');
-      }
-      if(gameScreen[ballDatum[0] + ballDirection[0]][ballDatum[1] + ballDirection[1]] === 2 && gameScreen[ballDatum[0] + 1][ballDatum[1]] === 0) {
-        ballDirection = [-1 * (ballDirection[0]), -1 * (ballDirection[1])];
-        ballVelocity = this.calculateBallVelocity({direction: ballDirection, magnitude: ballMagnitude}, 'board');
-      }
-      if(gameScreen[ballDatum[0] + ballDirection[0]][ballDatum[1] + ballDirection[1]] === 1 && 
-        gameScreen[ballDatum[0] + ballDirection[0]][ballDatum[1]] === 0 && 
-        gameScreen[ballDatum[0]][ballDatum[1] + ballDirection[1]] === 0) {
-        gameScreen[ballDatum[0] + ballDirection[0]][ballDatum[1] + ballDirection[1]] = 0;
-        ballDirection = [-1 * (ballDirection[0]), -1 * (ballDirection[1])];
-        ballVelocity = this.calculateBallVelocity({direction: ballDirection, magnitude: ballMagnitude});  
-      }
-      if(gameScreen[ballDatum[0] + ballDirection[0]][ballDatum[1]] === 1) {
-        gameScreen[ballDatum[0] + ballDirection[0]][ballDatum[1]] = 0;
-        ballDirection[0] = -1 * (ballDirection[0]);
-        ballVelocity = this.calculateBallVelocity({direction: ballDirection, magnitude: ballMagnitude});
-      }
-    }
-    if(ballDatum[1] === 39 || ballDatum[1] === 0) {
-      ballDirection[1] = -1 * (ballDirection[1]);
-      ballVelocity = this.calculateBallVelocity({direction: ballDirection, magnitude: ballMagnitude}); 
-    }
-
-    if(gameScreen[ballDatum[0]][ballDatum[1] + ballDirection[1]] === 1) {
-      gameScreen[ballDatum[0]][ballDatum[1] + ballDirection[1]] = 0;
-      ballDirection[1] = -1 * (ballDirection[1]);
-      ballVelocity = this.calculateBallVelocity({direction: ballDirection, magnitude: ballMagnitude});  
-    }
-    this.setState({ gameScreen, ballVelocity, ballDatum });
+  restart() {
+    clearInterval(this.currentInterval);
+    this.setState({
+      reset: true,
+      ballPosition: JSON.parse(JSON.stringify(this.initBallPosition)),
+      start: false,
+      score: 0,
+    },
+    () => { this.setState({ reset: false }); });
   }
 
   render() {
-    return(
-      <GameScreen moveBoardHandler={e => this.animateBoard(e)} handleKeyUp={e => this.handleKeyUp(e)} gameScreen={this.state.gameScreen}/>
+    const ballPosition = {
+      top: `${this.state.ballPosition[1]}px`,
+      left: `${this.state.ballPosition[0]}px`,
+    };
+    const bricksProps = {
+      ballPosition: this.state.ballPosition,
+      ballSpeed: this.state.ballSpeed,
+      ballSize: this.ballSize,
+      ballDirection: this.state.ballDirection,
+      handleBrickCollision: (arr) => { this.handleBrickCollision(arr); },
+      increaseScore: () => { this.increaseScore(); },
+      reset: this.state.reset,
+    };
+
+    const plankProps = {
+      ballPosition: this.state.ballPosition,
+      ballSpeed: this.state.ballSpeed,
+      ballSize: this.ballSize,
+      ballDirection: this.state.ballDirection,
+      position: this.initPlankPosition,
+      plankDimensions: this.plankDimensions,
+      handleBrickCollision: (arr) => { this.handleBrickCollision(arr); },
+      reset: this.state.reset,
+      startGame: (key) => { this.startGame(key); },
+      start: this.state.start,
+    };
+        
+    return (
+      <div>
+        <div className={styles.banner}>Breakout React</div>
+        <div className={styles.container}>
+          <ScoreBoard score={this.state.score} />
+          <div className={styles.screen}>
+            <Plank {...plankProps} />
+            <div className={styles.ball} style={ballPosition} />
+            <Bricks {...bricksProps} />
+          </div>
+        </div>
+      </div>
     );
   }
 }
