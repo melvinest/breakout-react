@@ -91,7 +91,7 @@ class App extends React.Component {
       if (this.state.ballSpeed > 0) {
         this.changeBallPosition();
       }
-    }, 1);
+    }, 5);
   }
 
   increaseScore() {
@@ -100,8 +100,6 @@ class App extends React.Component {
   }
 
   startGame(key) {
-    console.log(key);
-    console.log(this.state)
     const moves = {
       ArrowUp: 270,
       ArrowLeft: 225,

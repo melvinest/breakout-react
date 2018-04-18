@@ -61,8 +61,7 @@ class Plank extends React.Component {
         changeDirection[1] = true;
         this.props.handleBrickCollision(changeDirection);
       }
-    }
-    if ((this.boundaries.top < ballTop && this.boundaries.bottom > ballTop) ||
+    } else if ((this.boundaries.top < ballTop && this.boundaries.bottom > ballTop) ||
       (this.boundaries.bottom > ballBottom && this.boundaries.top < ballBottom)) {
       if (ballLeft <= this.boundaries.right && ballLeft > this.boundaries.left && horizontalDirection < 0) {
         changeDirection[0] = true;
@@ -73,19 +72,6 @@ class Plank extends React.Component {
         this.props.handleBrickCollision(changeDirection);
       }
     }
-    // if (this.boundaries.top < ballCenterVertical && this.boundaries.bottom > ballCenterVertical) {
-    //   if (ballLeft <= this.boundaries.right && ballLeft > this.boundaries.left && horizontalDirection < 0) {
-    //     changeDirection[0] = true;
-    //     console.log('a')
-    //     this.props.handleBrickCollision(changeDirection);
-    //   }
-    //   if (ballRight >= this.boundaries.left && ballRight < this.boundaries.right && horizontalDirection > 0) {
-    //     changeDirection[0] = true;
-    //     console.log('b')
-    //     this.props.handleBrickCollision(changeDirection);
-    //   }
-    // }
-
   }
 
   movePlank(key) {
