@@ -1,6 +1,7 @@
 import React from 'react';
 import Bricks from './bricks';
 import Plank from './plank';
+import ScoreBoard from './score_board';
 import styles from './styles/screen_style.css';
 
 class App extends React.Component {
@@ -31,17 +32,20 @@ class App extends React.Component {
     this.screenSize = 600;
     this.plankDimensions = { length: 80, width: 15 };
     this.initPlankPosition = [this.screenSize / 2 - this.plankDimensions.length / 2, this.screenSize - this.plankDimensions.width];
+    this.initBallPosition = [this.screenSize / 2 - this.ballSize / 2, this.screenSize - this.ballSize - this.plankDimensions.width]
     this.state = {
-      ballPosition: [this.screenSize / 2, this.screenSize - this.ballSize - this.plankDimensions.width],
-      ballDirection: -45,
+      ballPosition: JSON.parse(JSON.stringify(this.initBallPosition)),
+      ballDirection: null,
       ballSpeed: 3,
+      score: 0,
+      reset: false,
+      start: false,
     };
-    this.moveBall();
   }
 
   changeBallPosition() {
-    const { ballPosition } = this.state;
     const ballDirection = this.checkBallCollision();
+    const { ballPosition } = this.state;
     const horPosition = ballPosition[0] + (this.state.ballSpeed * Math.cos((Math.PI * ballDirection) / 180));
     const verPosition = ballPosition[1] + (this.state.ballSpeed * Math.sin((Math.PI * ballDirection) / 180));
     const newBallPosition = [horPosition, verPosition];
@@ -61,7 +65,8 @@ class App extends React.Component {
       changeDirections[1] = true;
     }
     if (ballPosition[1] >= this.screenSize - this.ballSize) {
-      // alert('game over');
+      alert(`Game Over Your Score is ${this.state.score}`);
+      this.restart();
       return null;
     }
     return this.changeBallDirection(changeDirections);
@@ -77,15 +82,46 @@ class App extends React.Component {
   }
 
   handleBrickCollision(changeDirections) {
-    console.log(changeDirections)
     const ballDirection = this.changeBallDirection(changeDirections);
     this.setState({ ballDirection });
   }
 
   moveBall() {
-    setInterval(() => {
-      this.changeBallPosition();
+    this.currentInterval = setInterval(() => {
+      if (this.state.ballSpeed > 0) {
+        this.changeBallPosition();
+      }
     }, 1);
+  }
+
+  increaseScore() {
+    const score = this.state.score + 1;
+    this.setState({ score });
+  }
+
+  startGame(key) {
+    console.log(key);
+    console.log(this.state)
+    const moves = {
+      ArrowUp: 270,
+      ArrowLeft: 225,
+      ArrowRight: 315,
+    };
+    this.setState({
+      ballDirection: moves[key],
+      start: true,
+    }, () => { this.moveBall(); });
+  }
+
+  restart() {
+    clearInterval(this.currentInterval);
+    this.setState({
+      reset: true,
+      ballPosition: JSON.parse(JSON.stringify(this.initBallPosition)),
+      start: false,
+      score: 0,
+    },
+    () => { this.setState({ reset: false }); });
   }
 
   render() {
@@ -93,13 +129,14 @@ class App extends React.Component {
       top: `${this.state.ballPosition[1]}px`,
       left: `${this.state.ballPosition[0]}px`,
     };
-
     const bricksProps = {
       ballPosition: this.state.ballPosition,
       ballSpeed: this.state.ballSpeed,
       ballSize: this.ballSize,
       ballDirection: this.state.ballDirection,
       handleBrickCollision: (arr) => { this.handleBrickCollision(arr); },
+      increaseScore: () => { this.increaseScore(); },
+      reset: this.state.reset,
     };
 
     const plankProps = {
@@ -110,12 +147,22 @@ class App extends React.Component {
       position: this.initPlankPosition,
       plankDimensions: this.plankDimensions,
       handleBrickCollision: (arr) => { this.handleBrickCollision(arr); },
+      reset: this.state.reset,
+      startGame: (key) => { this.startGame(key); },
+      start: this.state.start,
     };
+        
     return (
-      <div className={styles.screen} >
-        <Bricks {...bricksProps} />
-        <div className={styles.ball} style={ballPosition} />
-        <Plank {...plankProps} />
+      <div>
+        <div className={styles.banner}>Breakout React</div>
+        <div className={styles.container}>
+          <ScoreBoard score={this.state.score} />
+          <div className={styles.screen}>
+            <Plank {...plankProps} />
+            <div className={styles.ball} style={ballPosition} />
+            <Bricks {...bricksProps} />
+          </div>
+        </div>
       </div>
     );
   }

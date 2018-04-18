@@ -1,8 +1,20 @@
+.banner {
+  text-align: center;
+  height: 100px;
+  font-size: 50px;
+  line-height: 100px;
+  color: rgb(66, 188, 244);
+  font-family: 'Orbitron', sans-serif;
+  text-shadow: 0px 1px 1px rgba(255,255,255,0.5);
+}
+
 .screen {
   height: 600px;
   width: 600px;
   border: 1px solid black;
   position: relative; 
+  margin: 0 auto;
+  float: center;
 }
 
 .ball {
@@ -53,4 +65,22 @@
 
 .bricksContainer {
   float: left;
+}
+
+.container {
+  overflow: auto;
+}
+
+.scoreBoard {
+  height: 100px;
+  width: 200px;
+  background-color: black;
+  float: left;
+  margin-left: 75px;
+  margin-top: 100px;
+  font-family: 'Orbitron', sans-serif;
+  color: rgb(0,255,0);
+  line-height: 125px;
+  font-size: 100px;
+  text-align: center;
 }

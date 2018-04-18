@@ -27,9 +27,12 @@ class Brick extends React.Component {
   }
 
   componentDidUpdate() {
-    if (this.node) {
+    if (this.node && this.state.exist) {
       this.getBoundaries();
       this.checkCollision();
+    }
+    if (this.props.reset) {
+      this.styleBrick();
     }
   }
 
@@ -63,11 +66,13 @@ class Brick extends React.Component {
     if (this.boundaries.top < ballCenterVertical && this.boundaries.bottom > ballCenterVertical) {
       if (ballLeft <= this.boundaries.right && ballLeft > this.boundaries.left && horizontalDirection < 0) {
         this.setState({ exist: false });
+        this.props.increaseScore();
         changeDirection[0] = true;
         this.props.handleBrickCollision(changeDirection);
       }
       if (ballRight >= this.boundaries.left && ballRight < this.boundaries.right && horizontalDirection > 0) {
         this.setState({ exist: false });
+        this.props.increaseScore();
         changeDirection[0] = true;
         this.props.handleBrickCollision(changeDirection);
       }
@@ -76,11 +81,13 @@ class Brick extends React.Component {
         (this.boundaries.right > ballRight && this.boundaries.left < ballRight)) {
       if (ballTop <= this.boundaries.bottom && ballTop > this.boundaries.top && verticalDirection < 0) {
         this.setState({ exist: false });
+        this.props.increaseScore();
         changeDirection[1] = true;
         this.props.handleBrickCollision(changeDirection);
       }
       if (ballBottom >= this.boundaries.top && ballBottom < this.boundaries.bottom && verticalDirection > 0) {
         this.setState({ exist: false });
+        this.props.increaseScore();
         changeDirection[1] = true;
         this.props.handleBrickCollision(changeDirection);
       }

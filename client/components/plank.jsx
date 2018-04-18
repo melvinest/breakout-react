@@ -6,7 +6,7 @@ class Plank extends React.Component {
     super(props);
     this.plankSpeed = 20;
     this.state = {
-      position: this.props.position,
+      position: JSON.parse(JSON.stringify(this.props.position)),
       keyDowns: {
         ArrowLeft: false,
         ArrowRight: false,
@@ -24,6 +24,9 @@ class Plank extends React.Component {
     if (this.node) {
       this.getBoundaries();
       this.checkCollision();
+    }
+    if (this.props.reset) {
+      this.resetPlankPosition();
     }
   }
 
@@ -48,32 +51,28 @@ class Plank extends React.Component {
     const changeDirection = [false, false];
     const verticalDirection = Math.sign(Math.sin((Math.PI * this.props.ballDirection) / 180));
     const horizontalDirection = Math.sign(Math.cos((Math.PI * this.props.ballDirection) / 180));
-        if ((this.boundaries.left < ballLeft && this.boundaries.right > ballLeft) ||
+    if ((this.boundaries.left < ballLeft && this.boundaries.right > ballLeft) ||
         (this.boundaries.right > ballRight && this.boundaries.left < ballRight)) {
       if (ballTop <= this.boundaries.bottom && ballTop > this.boundaries.top && verticalDirection < 0) {
         changeDirection[1] = true;
-        console.log('c')
         this.props.handleBrickCollision(changeDirection);
       }
       if (ballBottom >= this.boundaries.top && ballBottom < this.boundaries.bottom && verticalDirection > 0) {
         changeDirection[1] = true;
-        console.log('d')
         this.props.handleBrickCollision(changeDirection);
       }
     }
-    // if ((this.boundaries.top < ballTop && this.boundaries.bottom > ballTop) ||
-    //   (this.boundaries.bottom > ballBottom && this.boundaries.top < ballBottom)) {
-    //   if (ballLeft <= this.boundaries.right && ballLeft > this.boundaries.left && horizontalDirection < 0) {
-    //     changeDirection[0] = true;
-    //     console.log('a')
-    //     this.props.handleBrickCollision(changeDirection);
-    //   }
-    //   if (ballRight >= this.boundaries.left && ballRight < this.boundaries.right && horizontalDirection > 0) {
-    //     changeDirection[0] = true;
-    //     console.log('b')
-    //     this.props.handleBrickCollision(changeDirection);
-    //   }
-    // }
+    if ((this.boundaries.top < ballTop && this.boundaries.bottom > ballTop) ||
+      (this.boundaries.bottom > ballBottom && this.boundaries.top < ballBottom)) {
+      if (ballLeft <= this.boundaries.right && ballLeft > this.boundaries.left && horizontalDirection < 0) {
+        changeDirection[0] = true;
+        this.props.handleBrickCollision(changeDirection);
+      }
+      if (ballRight >= this.boundaries.left && ballRight < this.boundaries.right && horizontalDirection > 0) {
+        changeDirection[0] = true;
+        this.props.handleBrickCollision(changeDirection);
+      }
+    }
     // if (this.boundaries.top < ballCenterVertical && this.boundaries.bottom > ballCenterVertical) {
     //   if (ballLeft <= this.boundaries.right && ballLeft > this.boundaries.left && horizontalDirection < 0) {
     //     changeDirection[0] = true;
@@ -100,6 +99,9 @@ class Plank extends React.Component {
       const { position } = this.state;
       position[0] = Math.min(Math.max(position[0] + (moves[key] * this.plankSpeed), 0), 520);
       this.setState({ position });
+      if (this.props.start === false) {
+        this.props.startGame(key);
+      }
     }
     // if (key === 'ArrowUp' || key === 'ArrowDown') {
     //   const { position } = this.state;
@@ -117,12 +119,18 @@ class Plank extends React.Component {
     }
   }
 
+  resetPlankPosition() {
+    this.setState({
+      position: JSON.parse(JSON.stringify(this.props.position)),
+    });
+  }
+
   render() {
-    const ballPosition = {
+    const plankPosition = {
       top: `${this.state.position[1]}px`,
       left: `${this.state.position[0]}px`,
     };
-    return (<div className={styles.plank} style={ballPosition} ref={(node) => { this.node = node; }}/>);
+    return (<div className={styles.plank} style={plankPosition} ref={(node) => { this.node = node; }}/>);
   }
 }
 
