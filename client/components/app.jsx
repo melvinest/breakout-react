@@ -30,11 +30,11 @@ class App extends React.Component {
     this.ballSize = 10;
     this.screenSize = 600;
     this.plankDimensions = { length: 80, width: 15 };
-    this.initPlankPosition = [this.screenSize / 2 - this.plankDimensions.length / 2, this.screenSize - this.plankDimensions.width],
+    this.initPlankPosition = [this.screenSize / 2 - this.plankDimensions.length / 2, this.screenSize - this.plankDimensions.width];
     this.state = {
       ballPosition: [this.screenSize / 2, this.screenSize - this.ballSize - this.plankDimensions.width],
-      ballDirection: 60,
-      ballSpeed: 5,
+      ballDirection: -45,
+      ballSpeed: 3,
     };
     this.moveBall();
   }
@@ -57,8 +57,12 @@ class App extends React.Component {
     if (ballPosition[0] <= 0 || ballPosition[0] + this.ballSize >= this.screenSize - this.ballSize) {
       changeDirections[0] = true;
     }
-    if (ballPosition[1] <= 0 || ballPosition[1] >= this.screenSize - this.ballSize) {
+    if (ballPosition[1] <= 0) {
       changeDirections[1] = true;
+    }
+    if (ballPosition[1] >= this.screenSize - this.ballSize) {
+      // alert('game over');
+      return null;
     }
     return this.changeBallDirection(changeDirections);
   }
@@ -73,14 +77,15 @@ class App extends React.Component {
   }
 
   handleBrickCollision(changeDirections) {
+    console.log(changeDirections)
     const ballDirection = this.changeBallDirection(changeDirections);
     this.setState({ ballDirection });
   }
 
   moveBall() {
-    // setInterval(() => {
-    //   this.changeBallPosition();
-    // }, 1);
+    setInterval(() => {
+      this.changeBallPosition();
+    }, 1);
   }
 
   render() {
@@ -103,6 +108,7 @@ class App extends React.Component {
       ballSize: this.ballSize,
       ballDirection: this.state.ballDirection,
       position: this.initPlankPosition,
+      plankDimensions: this.plankDimensions,
       handleBrickCollision: (arr) => { this.handleBrickCollision(arr); },
     };
     return (

@@ -20,13 +20,20 @@ class Plank extends React.Component {
     document.body.addEventListener('keydown', (e) => { this.handleKeyDown(e); });
   }
 
+  componentDidUpdate() {
+    if (this.node) {
+      this.getBoundaries();
+      this.checkCollision();
+    }
+  }
+
   getBoundaries() {
     const top = this.node.offsetTop;
-    const right = this.node.offsetLeft + this.brickDimensions.length;
-    const bottom = this.node.offsetTop + this.brickDimensions.width;
+    const right = this.node.offsetLeft + this.props.plankDimensions.length;
+    const bottom = this.node.offsetTop + this.props.plankDimensions.width;
     const left = this.node.offsetLeft;
-    const centerHorizontal = this.node.offsetLeft + (this.brickDimensions.length / 2);
-    const centerVertical = this.node.offsetTop + (this.brickDimensions.width / 2);
+    const centerHorizontal = this.node.offsetLeft + (this.props.plankDimensions.length / 2);
+    const centerVertical = this.node.offsetTop + (this.props.plankDimensions.width / 2);
     this.boundaries = {
       top, right, bottom, left, centerVertical, centerHorizontal,
     };
@@ -41,27 +48,45 @@ class Plank extends React.Component {
     const changeDirection = [false, false];
     const verticalDirection = Math.sign(Math.sin((Math.PI * this.props.ballDirection) / 180));
     const horizontalDirection = Math.sign(Math.cos((Math.PI * this.props.ballDirection) / 180));
-    if (this.boundaries.top < ballCenterVertical && this.boundaries.bottom > ballCenterVertical) {
-      if (ballLeft <= this.boundaries.right && ballLeft > this.boundaries.left && horizontalDirection < 0) {
-        changeDirection[0] = true;
-        this.props.handleBrickCollision(changeDirection);
-      }
-      if (ballRight >= this.boundaries.left && ballRight < this.boundaries.right && horizontalDirection > 0) {
-        changeDirection[0] = true;
-        this.props.handleBrickCollision(changeDirection);
-      }
-    }
-    if ((this.boundaries.left < ballLeft && this.boundaries.right > ballLeft) ||
+        if ((this.boundaries.left < ballLeft && this.boundaries.right > ballLeft) ||
         (this.boundaries.right > ballRight && this.boundaries.left < ballRight)) {
       if (ballTop <= this.boundaries.bottom && ballTop > this.boundaries.top && verticalDirection < 0) {
         changeDirection[1] = true;
+        console.log('c')
         this.props.handleBrickCollision(changeDirection);
       }
       if (ballBottom >= this.boundaries.top && ballBottom < this.boundaries.bottom && verticalDirection > 0) {
         changeDirection[1] = true;
+        console.log('d')
         this.props.handleBrickCollision(changeDirection);
       }
     }
+    // if ((this.boundaries.top < ballTop && this.boundaries.bottom > ballTop) ||
+    //   (this.boundaries.bottom > ballBottom && this.boundaries.top < ballBottom)) {
+    //   if (ballLeft <= this.boundaries.right && ballLeft > this.boundaries.left && horizontalDirection < 0) {
+    //     changeDirection[0] = true;
+    //     console.log('a')
+    //     this.props.handleBrickCollision(changeDirection);
+    //   }
+    //   if (ballRight >= this.boundaries.left && ballRight < this.boundaries.right && horizontalDirection > 0) {
+    //     changeDirection[0] = true;
+    //     console.log('b')
+    //     this.props.handleBrickCollision(changeDirection);
+    //   }
+    // }
+    // if (this.boundaries.top < ballCenterVertical && this.boundaries.bottom > ballCenterVertical) {
+    //   if (ballLeft <= this.boundaries.right && ballLeft > this.boundaries.left && horizontalDirection < 0) {
+    //     changeDirection[0] = true;
+    //     console.log('a')
+    //     this.props.handleBrickCollision(changeDirection);
+    //   }
+    //   if (ballRight >= this.boundaries.left && ballRight < this.boundaries.right && horizontalDirection > 0) {
+    //     changeDirection[0] = true;
+    //     console.log('b')
+    //     this.props.handleBrickCollision(changeDirection);
+    //   }
+    // }
+
   }
 
   movePlank(key) {
@@ -76,11 +101,11 @@ class Plank extends React.Component {
       position[0] = Math.min(Math.max(position[0] + (moves[key] * this.plankSpeed), 0), 520);
       this.setState({ position });
     }
-    if (key === 'ArrowUp' || key === 'ArrowDown') {
-      const { position } = this.state;
-      position[1] = Math.min(Math.max(position[1] + (moves[key] * this.plankSpeed), 0), 585);
-      this.setState({ position });
-    }
+    // if (key === 'ArrowUp' || key === 'ArrowDown') {
+    //   const { position } = this.state;
+    //   position[1] = Math.min(Math.max(position[1] + (moves[key] * this.plankSpeed), 0), 585);
+    //   this.setState({ position });
+    // }
   }
 
   handleKeyDown(e) {
@@ -97,7 +122,7 @@ class Plank extends React.Component {
       top: `${this.state.position[1]}px`,
       left: `${this.state.position[0]}px`,
     };
-    return (<div className={styles.plank} style={ballPosition}  />);
+    return (<div className={styles.plank} style={ballPosition} ref={(node) => { this.node = node; }}/>);
   }
 }
 
