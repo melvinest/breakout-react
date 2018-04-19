@@ -7,7 +7,7 @@ const app = express();
 app.use(cors());
 app.use(express.static(path.join(__dirname, '/../public')));
 
-app.listen(9000, () => {
-  console.log('listening to port 9000');
+app.listen(process.env.PORT, () => {
+  console.log('listening to port');
 });
 
