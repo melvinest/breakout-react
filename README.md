@@ -1,2 +1,3 @@
-#A breakout game created with ReactJS__
-breakout-react.herokuapp.com
+#A breakout game created with ReactJS
+</br>
+url: breakout-react.herokuapp.com
