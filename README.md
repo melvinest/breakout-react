@@ -1,2 +1,2 @@
-#mvp
-This is a project I completed as a student at [hackreactor](http://hackreactor.com). This project was worked on with a pair.
+#A breakout game created with ReactJS
+breakout-react.herokuapp.com
