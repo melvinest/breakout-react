@@ -1,10 +1,13 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const router = require('./router/router');
 
 const app = express();
 
 app.use(cors());
+
+app.use(router);
 app.use(express.static(path.join(__dirname, '/../public')));
 
 app.listen(process.env.PORT || 9000, () => {
